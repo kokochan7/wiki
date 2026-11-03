@@ -1,38 +1,66 @@
 # Deskside KB
 
-Internal IT knowledge base for technicians. Sign in, write and edit KBs in a rich text editor, keep a list of client companies, and manage who on the team can access it.
+**The knowledge base for IT teams that support many clients.** Keep every how-to, client procedure and onboarding checklist in one fast, searchable place, organised by client, and share a single article with a link when someone outside the team needs it.
 
-Runs entirely on Cloudflare: a Worker serves the API and the React app, and a D1 database stores the data.
+Deskside KB runs entirely on Cloudflare Workers and D1, which have a generous free tier: no servers to look after and no per-seat pricing. Deploy it once and your technicians can sign in straight away.
+
+![Deskside KB showing an onboarding article, with the client list on the left](docs/screenshot.png)
+
+## Why Deskside KB
+
+- **Built around your clients.** Every KB can belong to one client, several, or none (internal). The client list sits beside every article, so one click shows everything for that client.
+- **Writing that doesn't get in the way.** A clean rich text editor with headings, colours, checklists, tables and screenshots you can paste straight in. Nobody has to learn Markdown.
+- **Find anything in seconds.** Full-text search across every article, plus a ⌘K / Ctrl+K command palette.
+- **Client pages your team will actually use.** Each client has a logo, the services and software they run (Dialpad, Microsoft 365, Dentrix and so on) with a checkmark for each, and dedicated **Information** and **New Hire Procedure** sections.
+- **Share without handing out accounts.** Create a public link to a single KB, images included, and switch it off again whenever you like.
+- **The right access for everyone.** Admins, technicians and read-only viewers, each with their own username and password.
 
 ## Features
 
-- **Knowledge base:** a compact KB list with every client in a sidebar for one-click filtering (the full client list, which stays in place beside an open KB too), sortable by last updated, oldest first or title. Create, edit and delete KBs with a rich text editor (font size, text color, underline, alignment, indent, lists, checklists, tables, links, code, images that can be resized by dragging a corner; Ctrl/⌘+S to save). Content is stored as Markdown behind the scenes (Tiptap with its Markdown extension), so search and share links work on it directly; colour and size are kept as `<span style>` and indented or aligned paragraphs as `<p data-indent style="text-align">`, and the reader only lets those styles through. Indent and alignment apply only to the rows you select: a paragraph with line breaks is split first, and the split-off rows are marked `data-row` so they keep line spacing. Underline is saved as `<u>`. **Remove spacing** (the fold icon) deletes blank lines and pulls paragraphs together as tight rows, in the selection or the whole KB when nothing is selected. Categories (from a list admins manage and reorder in Settings) and any number of clients per KB. Technicians can click **Select multiple** to show checkboxes, select several KBs and use **Change category** or **Change clients** (add, remove or replace) on all of them at once; admins can also delete them.
-- **Images:** paste screenshots straight into the editor, drag them in, or use the image button. Large images are shrunk in the browser and stored in D1, and only signed-in users can see them. Click an image in a KB to zoom.
-- **Share links:** technicians can create a link to a single KB (with its images) that works without an account, and turn it off again. **Copy** starts a new KB with all the fields of an existing one.
-- **Public viewing:** anyone can browse read-only without signing in; signing in unlocks editing. Admins can turn this off in Settings.
-- **Search:** full-text search across titles and bodies, plus a ⌘K / Ctrl+K command palette.
-- **Clients:** an alphabetical list. Each client page has a logo, a slim **Services** panel at the top (the services/software the client uses, each with a checkmark, grouped by category with categories and services in A–Z order; admins and technicians add, tick, rename, recategorize and remove them in place), and side-by-side **Information** and **New Hire Procedure** sections (rich text with images; everyone can read them, only admins edit them), and the client's KBs at the bottom.
-- **Dashboard:** totals and the most recently updated KBs.
-- **Settings (admins):** site name, logo (also the browser tab icon) and accent colour, then Categories and Access. The name and logo also show on the sign-in page.
-- **User Accounts:** people sign in with a username and password. Admins add technicians, set roles, reset passwords and disable accounts.
-  - **Admin:** everything, including deleting KBs and clients, editing client Information and New Hire Procedure, and managing user accounts.
-  - **Technician:** create and edit KBs, client names and logos, and client services (no deleting).
-  - **Viewer:** read-only.
-- Light and dark mode, mobile layout.
+### Knowledge base
+- Compact list you can filter by client and category, and sort by last updated, oldest first or title
+- Rich text editor with font size, text colour, bold, italic, underline, alignment, indent, bulleted and numbered lists, checklists, tables, links, code, quotes and a **Remove spacing** button that tidies blank lines in one click
+- Paste or drag in screenshots, resize them by dragging a corner, and click any image to zoom
+- **Copy** starts a new KB from an existing one; Ctrl/⌘+S saves
+- **Select multiple** to change the category or clients of many KBs at once (admins can also delete them)
+- Categories that admins manage and reorder
 
-## First run
+### Clients
+- Alphabetical client list with logos (margins are trimmed automatically on upload)
+- A services panel at the top of each client, grouped by category and sorted A–Z, which technicians tick, rename and organise in place
+- Side-by-side **Information** and **New Hire Procedure** sections with full rich text and images
+- Every KB for that client at the bottom of its page
 
-After the first deploy, open the site. It asks you to create the first admin account. That screen only appears while there are no users, so do this right after deploying.
+### Team and settings
+- Dashboard with totals and the most recently updated KBs
+- Your own site name, logo (also used as the browser tab icon) and accent colour, shown on the sign-in page too
+- Optional public read-only viewing, so anyone can browse without signing in while editing stays behind a login
+- Light and dark mode, and a layout that works on phones
 
-## Deploying
+### Roles
 
-Cloudflare builds and deploys every push to `main` (Workers & Pages → wiki, connected to this repo; live at https://wiki.deskside.workers.dev). The deploy command is `npx wrangler deploy`, which:
+| Role | Can do |
+| --- | --- |
+| **Admin** | Everything, including deleting KBs and clients, editing client Information and New Hire Procedure, site settings and user accounts |
+| **Technician** | Create and edit KBs, client names, logos and services, and share links |
+| **Viewer** | Read only |
 
-1. runs `npm run build` (configured in `wrangler.jsonc`),
-2. connects the `deskside-wiki` D1 database (created automatically on the first deploy; it kept that name when the Worker was renamed to `wiki`),
-3. uploads the Worker and the built app.
+## Get started
 
-The app creates its own database tables on first request. Schema changes go in `worker/schema.ts` as a new entry in `MIGRATIONS`.
+1. Fork this repository and connect it to Cloudflare under **Workers & Pages → Create → Import a repository**. The deploy command is `npx wrangler deploy`.
+2. Cloudflare builds the app, creates the D1 database on the first deploy and publishes the site. Every push to `main` deploys again.
+3. Open the site and create the first admin account. That screen only appears while there are no users, so do this right after the first deploy.
+4. Add your technicians under **User Accounts**, then your clients, and start writing.
+
+The app creates and upgrades its own database tables, so there are no migrations to run by hand.
+
+## Under the hood
+
+- **Cloudflare Workers** serve the API ([Hono](https://hono.dev)) and the React app from one Worker
+- **Cloudflare D1** (SQLite) stores everything, including images, which are shrunk in the browser before upload and only served to people allowed to see them
+- **React 19**, **Tailwind CSS v4** and **Vite** for the interface
+- **Tiptap** for the editor. Articles are stored as Markdown, so search and share links work on plain text, and the reader only allows the few inline styles the editor produces (colour, size and alignment)
+- Passwords are hashed and sessions are cookie based, and writes are protected against cross-site requests
 
 ## Local development
 
@@ -43,8 +71,11 @@ npm run build && npm run dev   # http://localhost:8787 with a local database
 
 For hot reload of the UI, run `npm run dev` in one terminal and `npm run dev:ui` in another, then open the Vite URL.
 
+Schema changes go in `worker/schema.ts` as a new entry in `MIGRATIONS`.
+
 ## Project layout
 
-- `worker/` — API (Hono), authentication, database schema
-- `src/` — React app (Tailwind CSS)
-- `wrangler.jsonc` — Cloudflare config
+- `worker/`: API, authentication and database schema
+- `src/`: React app
+- `docs/`: screenshot used in this README
+- `wrangler.jsonc`: Cloudflare configuration
